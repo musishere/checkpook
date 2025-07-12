@@ -1,0 +1,56 @@
+This is a professional, production-grade Learning Management System (LMS) backend built using Node.js, TypeScript, Prisma ORM, and Supabase PostgreSQL with role-based access control.
+Completed Features:
+
+ ______ Auth Module _________
+
+POST /api/auth/signup – Register (student, instructor, or admin)
+
+POST /api/auth/login – Login and receive JWT token
+
+Passwords securely hashed using bcrypt
+
+Middleware for requireAuth and role-based access (admin, instructor, student)
+
+Type-safe req.user via express.d.ts
+
+____________ Course Module ____________
+
+POST /api/courses – Instructor creates a course
+
+PATCH /api/courses/:id – Instructor updates a course (auto sets isApproved = false)
+
+GET /api/courses – List all courses (public)
+
+GET /api/courses/:id – Course detail
+
+GET /api/courses/my – Instructor-only: fetch own courses
+
+POST /api/courses/:id/enroll – Student enrollment in a course
+
+GET /api/admin/courses/pending – Admin fetches all pending (isApproved = false) courses
+
+_________ Lesson Module __________
+
+POST /api/courses/:id/lessons – Instructor adds a lesson to own course
+
+Raw SQL insert to avoid PgBouncer prepared statement issues
+
+Proper UUID casting in insert queries
+
+Safe fetching of the newly created lesson
+
+_______ Tech Stack _________
+
+Node.js + TypeScript
+
+Express.js
+
+Prisma ORM
+
+Supabase PostgreSQL (with PgBouncer pooling)
+
+Zod (for request validation)
+
+JWT for auth
+
+bcrypt for password hashing

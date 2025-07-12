@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  INSTRUCTOR
+  STUDENT
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  role        Role
+  courses     Course[]     @relation("InstructorCourses")
+  enrollments Enrollment[] @relation("StudentEnrollments")
+}
+
+model Course {
+  id           String       @id @default(uuid())
+  title        String
+  description  String
+  price        Float
+  thumbnailUrl String?
+  category     String?
+  instructorId String
+  instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id])
+  isApproved   Boolean      @default(false)
+  lessons      Lesson[]
+  enrollments  Enrollment[] @relation("CourseEnrollments")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  videoUrl    String
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  studentId String   @db.Uuid
+  student   User     @relation("StudentEnrollments", fields: [studentId], references: [id])
+  courseId  String   @db.Uuid
+  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+}

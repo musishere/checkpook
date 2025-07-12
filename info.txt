@@ -1,0 +1,3 @@
+supabase project password  = uchihaItachi12
+Connect String = postgresql://postgres:[YOUR-PASSWORD]@db.tcxkstwlmujdrdxdduyh.supabase.co:5432/postgres
+'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace
