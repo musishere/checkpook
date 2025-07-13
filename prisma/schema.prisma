@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      ="postgresql://postgres.msunmwxjdbzyknkpbucr:uchihaItachi12@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
 }
 
 enum Role {
@@ -12,6 +12,7 @@ enum Role {
   INSTRUCTOR
   STUDENT
 }
+
 
 model User {
   id             String           @id @default(uuid())
@@ -21,8 +22,6 @@ model User {
   courses        Course[]         @relation("InstructorCourses")
   enrollments    Enrollment[]     @relation("StudentEnrollments")
   lessonProgress LessonProgress[]
-
-  @@map("User")
 }
 
 model Course {
@@ -39,43 +38,33 @@ model Course {
   enrollments  Enrollment[] @relation("CourseEnrollments")
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-
-  @@map("Course")
 }
 
 model Lesson {
-  id         String           @id @default(uuid())
-  title      String
-  videoUrl   String
-  courseId   String
-  course     Course           @relation(fields: [courseId], references: [id])
-  progress   LessonProgress[]
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-
-  @@map("Lesson")
+  id        String   @id @default(uuid())
+  title     String
+  videoUrl  String
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  progress  LessonProgress[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model LessonProgress {
   id          String   @id @default(uuid())
   lessonId    String
-  lesson      Lesson   @relation(fields: [lessonId], references: [id])
   studentId   String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
   student     User     @relation(fields: [studentId], references: [id])
   completedAt DateTime @default(now())
-
-  @@map("LessonProgress")
-  @@unique([lessonId, studentId])
 }
 
 model Enrollment {
   id        String   @id @default(uuid())
-  studentId String   @db.Uuid
+  studentId String
+  courseId  String
   student   User     @relation("StudentEnrollments", fields: [studentId], references: [id])
-  courseId  String   @db.Uuid
   course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id])
   createdAt DateTime @default(now())
-
-  @@unique([studentId, courseId])
-  @@map("Enrollment")
 }

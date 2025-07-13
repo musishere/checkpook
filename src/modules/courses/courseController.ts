@@ -21,6 +21,8 @@ export const createCourse = async (req: Request, res: Response) => {
         description,
         price,
         instructorId,
+        thumbnailUrl: req.body.thumbnailUrl || null, // Optional thumbnail
+        category: req.body.category || null, // Optional category
       },
     });
 
