@@ -9,9 +9,15 @@ const TOKEN_EXPIRY = "7d"; // You can change this to '1h' or '30m' for shorter s
 
 // Signup Controller
 export const signupController = async (req: Request, res: Response) => {
-  const { name, email, password, role } = req.body;
+  const { email, password, role } = req.body;
 
   try {
+    // Validate role explicitly to avoid enum error
+    const validRoles = ["ADMIN", "INSTRUCTOR", "STUDENT"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -21,22 +27,20 @@ export const signupController = async (req: Request, res: Response) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user in DB
+    // Create new user
     const user = await prisma.user.create({
       data: {
-        name,
         email,
         password: hashedPassword,
         role,
       },
     });
 
-    // Success Response (never return password!)
+    // Success response (do not return password)
     return res.status(201).json({
       message: "User registered successfully",
       user: {
         id: user.id,
-        name: user.name,
         email: user.email,
         role: user.role,
       },
@@ -82,10 +86,9 @@ export const loginController = async (req: Request, res: Response) => {
     // Success Response
     return res.status(200).json({
       message: "Login successful",
-      token, // Optional — frontend can also read from cookie
+      token,
       user: {
         id: user.id,
-        name: user.name,
         email: user.email,
         role: user.role,
       },

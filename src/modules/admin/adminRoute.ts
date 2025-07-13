@@ -10,7 +10,7 @@ const router = Router();
 
 router.get(
   "/dashboard",
-  requireAuth(["admin"]),
+  requireAuth(["ADMIN"]),
   (req: Request, res: Response) => {
     // @ts-ignore
     res.json({ message: `Welcome, admin ${req.user.userId}` });

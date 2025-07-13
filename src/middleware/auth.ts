@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { UserRole } from "../types/roles";
+import { UserRole } from "../types/roles"; // should be "ADMIN" | "INSTRUCTOR" | "STUDENT"
 
-export const requireAuth = (roles: UserRole[] = []) => {
+const VALID_ROLES: UserRole[] = ["ADMIN", "INSTRUCTOR", "STUDENT"];
+
+export const requireAuth = (allowed: UserRole[] = []) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "No token provided" });
     }
 
@@ -18,24 +19,23 @@ export const requireAuth = (roles: UserRole[] = []) => {
         role: string;
       };
 
-      // 🔒 Type guard to check if decoded.role is a valid UserRole
-      if (
-        !["admin", "instructor", "student", "support"].includes(decoded.role)
-      ) {
+      const role = decoded.role.toUpperCase(); // <-- normalise
+
+      if (!VALID_ROLES.includes(role as UserRole)) {
         return res.status(403).json({ error: "Invalid role in token" });
       }
 
-      req.user = {
-        id: decoded.userId,
-        role: decoded.role as UserRole,
-      };
+      req.user = { id: decoded.userId, role: role as UserRole };
 
-      if (roles.length && !roles.includes(req.user.role)) {
+      // If route expects a subset of roles
+      // console.log("Decoded JWT:", decoded);
+
+      if (allowed.length && !allowed.includes(req.user.role)) {
         return res.status(403).json({ error: "Access denied" });
       }
 
       next();
-    } catch (err) {
+    } catch {
       return res.status(401).json({ error: "Invalid token" });
     }
   };

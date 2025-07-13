@@ -38,13 +38,12 @@ export const getAllCourses = async (req: Request, res: Response) => {
         instructor: {
           select: {
             id: true,
-            name: true,
             email: true,
             role: true,
           },
         },
       },
-    });
+    } as any);
 
     res.status(200).json(courses);
   } catch (err) {
@@ -63,13 +62,13 @@ export const getCourseById = async (req: Request, res: Response) => {
         instructor: {
           select: {
             id: true,
-            name: true,
+            // name: true,
             email: true,
             role: true,
           },
         },
       },
-    });
+    } as any);
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
@@ -81,43 +80,48 @@ export const getCourseById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 export const enrollStudent = async (req: Request, res: Response) => {
   const { id: courseId } = req.params;
   const studentId = req.user?.id;
 
+  if (!studentId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
   try {
-    // Check if course exists
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    // 1. Check if course exists (raw SQL)
+    const course = await prisma.$queryRaw`
+      SELECT * FROM "Course" WHERE id = ${courseId}::uuid
+    `;
+
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    // Check if already enrolled
-    const already = await prisma.enrollment.findUnique({
-      where: {
-        studentId_courseId: {
-          studentId: studentId!,
-          courseId,
-        },
-      },
-    });
-    if (already) {
+    // 2. Check if already enrolled (raw SQL)
+    const alreadyEnrolled = await prisma.$queryRaw`
+      SELECT * FROM "Enrollment"
+      WHERE "studentId" = ${studentId}::uuid
+      AND "courseId" = ${courseId}::uuid
+    `;
+
+    if (alreadyEnrolled.length > 0) {
       return res.status(400).json({ message: "Already enrolled" });
     }
 
-    // Enroll student
-    const enrollment = await prisma.enrollment.create({
-      data: {
-        studentId: studentId!,
-        courseId,
-      },
-    });
+    // 3. Create enrollment (raw SQL)
+    await prisma.$queryRaw`
+      INSERT INTO "Enrollment" ("studentId", "courseId")
+      VALUES (${studentId}::uuid, ${courseId}::uuid)
+    `;
 
-    res.status(201).json({ message: "Enrollment successful", enrollment });
-  } catch (err) {
+    return res.status(201).json({ message: "Enrollment successful" });
+  } catch (err: any) {
     console.error("Enrollment error:", err);
-    res.status(500).json({ message: "Something went wrong" });
+    return res.status(500).json({
+      message: "Enrollment failed",
+      error: err.message,
+    });
   }
 };
 

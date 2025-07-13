@@ -18,32 +18,32 @@ const router = Router();
 // 🔒 Instructor creates a course
 router.post(
   "/",
-  requireAuth(["instructor"]),
+  requireAuth(["INSTRUCTOR"]),
   validateRequest(createCourseSchema),
   createCourse
 );
 
 // Instructor can view their own courses
-router.get("/my", requireAuth(["instructor"]), getInstructorCourses);
+router.get("/my", requireAuth(["INSTRUCTOR"]), getInstructorCourses);
 
 // Get all published courses (public or for student browsing)
 router.get("/", getAllCourses);
 
 // Enroll student in a course
-router.post("/:id/enroll", requireAuth(["student"]), enrollStudent);
+router.post("/:id/enroll", requireAuth(["STUDENT"]), enrollStudent);
 
 // Get course by ID (public or protected)
 router.get("/:id", getCourseById);
 
 router.patch(
   "/:id",
-  requireAuth(["instructor"]),
+  requireAuth(["INSTRUCTOR"]),
   validateRequest(UpdateCourseSchema),
   updateCourse
 );
 router.post(
   "/:id/submit-review",
-  requireAuth(["instructor"]),
+  requireAuth(["INSTRUCTOR"]),
   submitCourseForReview
 );
 

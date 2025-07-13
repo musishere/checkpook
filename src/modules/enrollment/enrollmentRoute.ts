@@ -4,6 +4,6 @@ import { requireAuth } from "../../middleware/auth";
 
 const router = Router();
 
-router.get("/my-courses", requireAuth(["student"]), getEnrolledCourses);
+router.get("/my-courses", requireAuth(["STUDENT"]), getEnrolledCourses);
 
 export default router;
